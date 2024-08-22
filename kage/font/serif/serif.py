@@ -10,21 +10,20 @@ from argparse import Namespace
 
 class Serif(Font):
     def __init__(self, size = 2) -> None:
-        self.kRate = 100
+        super().__init__(size)
         if size == 1:
             self.kMinWidthY = 1.2
             self.kMinWidthU = 2 #
             self.kMinWidthT = 3.6
-            self.kWidth = 3
-            self.kKakato = 1.8
+
             self.kL2RDfatten = 1.1
-            self.kMage = 6
-            self.kUseCurve = False
+
             self.kAdjustKakatoL = [8, 5, 3, 1, 0]
             self.kAdjustKakatoR = [4, 3, 2, 1]
             self.kAdjustKakatoRangeX = 12
             self.kAdjustKakatoRangeY = [1, 11, 14, 18]
             self.kAdjustKakatoStep = 3
+
             self.kAdjustUrokoX = [14, 12, 9, 7]
             self.kAdjustUrokoY = [7, 6, 5, 4]
             self.kAdjustUrokoLength = [13, 21, 30]
@@ -32,22 +31,22 @@ class Serif(Font):
             self.kAdjustUrokoLine = [13, 15, 18]
             self.kAdjustUroko2Step = 3 #
             self.kAdjustUroko2Length = 40 #
+
             self.kAdjustTateStep = 4 #
             self.kAdjustMageStep = 5 #
         else:
             self.kMinWidthY = 2
             self.kMinWidthU = 2 #
             self.kMinWidthT = 6
-            self.kWidth = 5
-            self.kKakato = 3
+
             self.kL2RDfatten = 1.1
-            self.kMage = 10
-            self.kUseCurve = False
+
             self.kAdjustKakatoL = [14, 9, 5, 2, 0]
             self.kAdjustKakatoR = [8, 6, 4, 2]
             self.kAdjustKakatoRangeX = 20
             self.kAdjustKakatoRangeY = [1, 19, 24, 30]
             self.kAdjustKakatoStep = 3
+
             self.kAdjustUrokoX = [24, 20, 16, 12]
             self.kAdjustUrokoY = [12, 11, 9, 8]
             self.kAdjustUrokoLength = [22, 36, 50]
@@ -55,6 +54,7 @@ class Serif(Font):
             self.kAdjustUrokoLine = [22, 26, 30]
             self.kAdjustUroko2Step = 3 #
             self.kAdjustUroko2Length = 40 #
+
             self.kAdjustTateStep = 4 #
             self.kAdjustMageStep = 5 #
 
