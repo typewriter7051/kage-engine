@@ -1,5 +1,5 @@
-from ...vec2 import Vec2, normalize
-from ..sans import Sans
+from ..sans     import Sans
+from ...vec2    import Vec2, normalize
 import svgwrite
 import svgwrite.path
 import numpy as np

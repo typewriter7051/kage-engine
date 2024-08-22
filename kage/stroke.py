@@ -1,20 +1,14 @@
-from argparse import Namespace
-from . vec2 import Vec2, is_cross, is_cross_box
+from .vec2      import Vec2, is_cross, is_cross_box
+
+from argparse   import Namespace
 import numpy as np
 
-def stretch(dp, sp, p, min_, max_):
-    if (p < sp + 100):
-        p1 = min_
-        p3 = min_
-        p2 = sp + 100
-        p4 = dp + 100
-    else:
-        p1 = sp + 100
-        p3 = dp + 100
-        p2 = max_
-        p4 = max_
-    return np.floor(((p - p1) / (p2 - p1)) * (p4 - p3) + p3)
-
+"""
+a1_100 defines the stroke type.
+a2_100 a3_100 define the start and end serifs.
+vec_1 vec_2 are the start and endpoints of the stroke.
+vec_3 vec_4 are optionally used as Bezier points if the stroke is curved.
+"""
 class Stroke:
     def __init__(self, data: list) -> None:
         self.a1_100 = int(data[0])
@@ -57,21 +51,21 @@ class Stroke:
 
     def stretch(self, sx, sx2, sy, sy2, bminX, bmaxX, bminY, bmaxY):
         self.vec_1 = Vec2(
-            stretch(sx, sx2, self.vec_1.x, bminX, bmaxX),
-            stretch(sy, sy2, self.vec_1.y, bminY, bmaxY),
+            self._stretch(sx, sx2, self.vec_1.x, bminX, bmaxX),
+            self._stretch(sy, sy2, self.vec_1.y, bminY, bmaxY),
         )
         self.vec_2 = Vec2(
-            stretch(sx, sx2, self.vec_2.x, bminX, bmaxX),
-            stretch(sy, sy2, self.vec_2.y, bminY, bmaxY),
+            self._stretch(sx, sx2, self.vec_2.x, bminX, bmaxX),
+            self._stretch(sy, sy2, self.vec_2.y, bminY, bmaxY),
         )
         if not (self.a1_100 == 99 and self.a1_opt == 0): # always true
             self.vec_3 = Vec2(
-                stretch(sx, sx2, self.vec_3.x, bminX, bmaxX),
-                stretch(sy, sy2, self.vec_3.y, bminY, bmaxY),
+                self._stretch(sx, sx2, self.vec_3.x, bminX, bmaxX),
+                self._stretch(sy, sy2, self.vec_3.y, bminY, bmaxY),
             )
             self.vec_4 = Vec2(
-                stretch(sx, sx2, self.vec_4.x, bminX, bmaxX),
-                stretch(sy, sy2, self.vec_4.y, bminY, bmaxY),
+                self._stretch(sx, sx2, self.vec_4.x, bminX, bmaxX),
+                self._stretch(sy, sy2, self.vec_4.y, bminY, bmaxY),
             )
 
     def get_box(self):
@@ -117,3 +111,17 @@ class Stroke:
             self.vec_4.x,
             self.vec_4.y,
         ]
+
+    def _stretch(self, dp, sp, p, min_, max_):
+        if (p < sp + 100):
+            p1 = min_
+            p3 = min_
+            p2 = sp + 100
+            p4 = dp + 100
+        else:
+            p1 = sp + 100
+            p3 = dp + 100
+            p2 = max_
+            p4 = max_
+        return np.floor(((p - p1) / (p2 - p1)) * (p4 - p3) + p3)
+

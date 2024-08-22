@@ -24,3 +24,4 @@ class Components:
         self.hash[name] = data
     
     set = push
+

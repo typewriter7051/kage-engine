@@ -22,36 +22,16 @@ class Vec2(np.ndarray):
 
     def cross_product(self, another) -> 'Vec2':
         return self.x * another.y - another.x * self.y
-    
-    """ This function is unused.
-    def normalize(self, magnitude = 1) -> None:
-        ""
-        normalize this vector with the same angle and a new magnitude.
-        ""
-        assert magnitude > 0
-        # self in polar coordinate system form
-        self.x, self.y = magnitude, np.arctan2(self.y, self.x)
-        self.x, self.y = self.x * np.cos(self.y), self.x * np.sin(self.y)
-    """
 
 
 """
-def normalize(array: Vec2, magnitude = 1) -> Vec2:
-    ""
-    calculates a new vector with the same angle and a new magnitude.
-    ""
-    # ret vector in polar coordinate system form
-    assert magnitude != 0
-    ret = Vec2(magnitude, np.arctan2(array.y, array.x))
-    ret = Vec2(ret[0] * np.cos(ret[1]), ret[0] * np.sin(ret[1]))
-    return ret
+Calculates a new vector with the same angle and a new magnitude.
 """
 def normalize(vec: Vec2, magnitude = 1) -> Vec2:
-    """
-    calculates a new vector with the same angle and a new magnitude.
-    """
     norm = np.sqrt(vec.x * vec.x + vec.y * vec.y);
+    assert norm != 0
     return vec * magnitude / norm
+
 
 """
 Returns true if two line segments (vec11, vec12), (vec21, vec22) intersect.
@@ -68,6 +48,7 @@ def is_cross(vec11: Vec2, vec12: Vec2, vec21: Vec2, vec22: Vec2) -> bool:
     cross_2122_2111 = (vec21 - vec22).cross_product(vec21 - vec11)
     cross_2122_2112 = (vec21 - vec22).cross_product(vec21 - vec12)
     return cross_1112_1121 * cross_1112_1122 <= 0 and cross_2122_2111 * cross_2122_2112 <= 0 # XXX round
+
 
 """
 Returns true if the line segment (vec_1, vec_2) intersect with the bounding

@@ -1,7 +1,7 @@
-from ...vec2 import Vec2, normalize
 from ..serif import Serif
-import svgwrite
+from ...vec2 import Vec2, normalize
 import numpy as np
+import svgwrite
 
 class Sans(Serif):
     def __init__(self, size=2) -> None:
@@ -94,3 +94,4 @@ class Sans(Serif):
                 stroke_drawer.draw_curve(stroke.vec_2, stroke.vec_3, stroke.vec_4, 1, stroke.a3_100, False, True)
             else:
                 pass
+

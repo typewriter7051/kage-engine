@@ -1,12 +1,12 @@
-from math import floor
-from ...vec2   import Vec2, normalize
-from ...stroke import Stroke
-from ..font    import Font
-from . serif_stroke import SerifStroke
+from ...vec2        import Vec2, normalize
+from ...stroke      import Stroke
+from ..font         import Font
+from .serif_stroke  import SerifStroke
 
-import svgwrite
+from argparse       import Namespace
+from math           import floor
 import numpy as np
-from argparse import Namespace
+import svgwrite
 
 class Serif(Font):
     def __init__(self, size = 2) -> None:
@@ -390,3 +390,4 @@ class Serif(Font):
             elif stroke.a1_100 == 9:
                 # may not be exist ... no need
                 pass
+

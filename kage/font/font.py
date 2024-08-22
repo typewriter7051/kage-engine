@@ -1,6 +1,7 @@
-from abc import ABC, abstractmethod
+from ..stroke   import Stroke
+
+from abc        import ABC, abstractmethod
 import svgwrite
-from .. stroke import Stroke
 
 class Font(ABC):
     def __init__(self, size=2) -> None:
@@ -19,3 +20,4 @@ class Font(ABC):
     @abstractmethod
     def drawer(self, canvas: svgwrite.Drawing, strokes_list: list[Stroke]):
         pass
+

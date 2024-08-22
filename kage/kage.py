@@ -1,15 +1,29 @@
-from . components import Components
-from . stroke import Stroke
-from . vec2 import Vec2
-from . font.serif import Serif
-from argparse import Namespace
-import svgwrite
+from .components    import Components
+from .font          import Font
+from .stroke        import Stroke
+from .vec2          import Vec2
+
+from argparse       import Namespace
+import csv
 import numpy as np
+import svgwrite
 
 class Kage:
-    def __init__(self, ignore_component_version = False) -> None:
+    def __init__(self, dump_path: str=None, ignore_component_version=False,
+                 font: Font=None) -> None:
         self.components = Components(ignore_component_version)
-        self.font = Serif() # TODO: フォントを選択できるようにする
+        self.font = font
+
+        assert dump_path != None, "Path to dump_newest_only.txt/dump_all_versions.txt must be set."
+        with open(dump_path, 'r', encoding='utf-8') as file:
+            lines = file.readlines()
+        lines = csv.reader(lines, delimiter='|')
+        for i, line in enumerate(lines):
+            if i <= 1 or len(line) < 3:
+                continue
+            line = [i.strip() for i in line]
+
+            self.components.push(line[0], line[2])
 
     @property
     def type(self):
@@ -20,6 +34,7 @@ class Kage:
         self.font = another
 
     def make_glyph(self, name: str) -> svgwrite.Drawing:
+        assert self.font != None, "Font must be set before generating."
         data = self.components.search(name)
         canvas = svgwrite.Drawing(size=('200', '200'))
         return self.make_glyph_with_data(canvas, data)

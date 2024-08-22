@@ -1,8 +1,8 @@
-from ...vec2 import Vec2, normalize
-from ..sans import Sans
+from ..sans     import Sans
+from ...vec2    import Vec2, normalize
+import numpy as np
 import svgwrite
 import svgwrite.path
-import numpy as np
 
 def if_in_merge_range(vec_1: Vec2, vec_2: Vec2, merge_range: float) -> bool:
     return np.hypot(*(vec_1 - vec_2)) < merge_range

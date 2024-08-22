@@ -1,7 +1,6 @@
-from . vec2 import Vec2, normalize
-
+from .vec2  import Vec2, normalize
+from math   import floor
 from typing import Callable, Tuple, List
-from math import floor
 
 
 def ternary_search_max(f: Callable[[float], float], left: float, right: float,

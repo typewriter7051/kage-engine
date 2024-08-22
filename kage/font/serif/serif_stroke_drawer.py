@@ -1,9 +1,9 @@
-from ...vec2 import Vec2, normalize
-from ...util import generate_flatten_curve
 from ..serif import Serif
+from ...util import generate_flatten_curve
+from ...vec2 import Vec2, normalize
+import numpy as np
 import svgwrite
 import svgwrite.path
-import numpy as np
 
 class LegacySerifStrokeDrawer:
     def __init__(self, font: Serif, canvas: svgwrite.Drawing) -> None:
@@ -550,5 +550,6 @@ class LegacySerifStrokeDrawer:
                 path = svgwrite.path.Path(d = "M" + (" L".join(poly2)), stroke = 'black', stroke_width = 0, fill = 'black')
                 self.canvas.add(path)
 
-class BezierSerifStrokeDrawer(LegacySerifStrokeDrawer):
+class BezierSerifStrokeDrawer(LegacySerifStrokeDrawer): # XXX Finish this.
     pass
+
