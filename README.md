@@ -11,37 +11,28 @@ Firstly, You should download `dump_newest_only.txt` or `dump_all_versions.txt` f
 ```python
 from kage import Kage
 from kage.font.sans import Sans
-from kage.font.serif import Serif
-import csv
+#from kage.font.serif import Serif # Uncomment if you want serif instead.
 import os
 import multiprocessing
 
 # Set the flag `ignore_component_version` if you want to use the glyph data in `dump_newest_only.txt`.
 # This is because `dump_newest_only.txt` only contains the latest version of components.
 # However, glyphs in `dump_newest_only.txt` may reference older versions of multiple components.
-k = Kage(ignore_component_version=True)
-# You can use `Serif()` as well!
-k.font = Sans()
+dump_path = 'dump_newest_only.txt'
+k = Kage(dump_path=dump_path, ignore_component_version=True, font=Sans())
 
-# generate a glyph
+# If you want to add your own glyph data from outside the dump file, simply
+# push the glyph name (see https://en.glyphwiki.org/wiki/GlyphWiki:AddingGlyphs#i6
+# for naming guidelines) and data.
+k.components.push("u2ff0-u53c8-u53b6", "99:0:0:0:0:200:200:u53c8-01:0:0:0$99:0:0:0:0:200:200:u53b6-02:0:0:0");
+
+# Generate a glyph.
 def gen(i: int):
     key = f'u{i:x}'
     canvas = k.make_glyph(name=key)
     canvas.saveas(os.path.join('./output', f'{key}.svg'))
 
-# read the glyph data
-with open('dump_newest_only.txt', 'r', encoding='utf-8') as f:
-    lines = f.readlines()
-
-lines = csv.reader(lines, delimiter='|')
-for i, line in enumerate(lines):
-    if i <= 1 or len(line) < 3:
-        continue
-    line = [i.strip() for i in line]
-
-    k.components.push(line[0], line[2])
-
-# parallel generation
+# Parallel generation.
 if __name__ == '__main__':
     with multiprocessing.Pool(16) as pool:
         pool.map(gen, list([0x6708, 0x6c23, 0x6728, 0x9ed1, 0x6230])) 
@@ -58,6 +49,8 @@ if __name__ == '__main__':
 u+5f71，“影”
 
 # Japanese Names
+
+Various stroke detail names occur in romaji which I do not fully understand, here is my progress.
 
 |Kana|Chinese|
 |:-:|:-:|
@@ -78,7 +71,7 @@ u+5f71，“影”
 
 - Bezier Serif stroke drawer.
 
-- Clean up font/stroke inheritance model.
+- Clean up font/stroke inheritance model (partially done).
 
 # Scholarship Information
 
