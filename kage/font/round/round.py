@@ -1,4 +1,3 @@
-#from ..serif import Serif
 from ..serif_font   import SerifFont
 from ...vec2        import Vec2, normalize
 import numpy as np

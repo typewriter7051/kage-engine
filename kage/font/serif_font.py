@@ -69,6 +69,9 @@ class SerifFont(Font):
     def draw_strokes(self, canvas: svgwrite.Drawing):
         raise NotImplementedError()
 
+    """
+    Adjusts the strokes' serif details and prepares them to be drawn.
+    """
     def __adjust_stroke(self):
         self.__adjust_hane()      # ハネ
         self.__adjust_mage()      # 折れのカーブ, 曲げ
