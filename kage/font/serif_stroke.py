@@ -1,5 +1,8 @@
-from ...stroke import Stroke
+from ..stroke import Stroke
 
+"""
+Contains the stroke along with additional serif info.
+"""
 class SerifStroke:
     def __init__(self, stroke: Stroke) -> None:
         self.stroke = stroke

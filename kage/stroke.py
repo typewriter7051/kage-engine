@@ -51,21 +51,21 @@ class Stroke:
 
     def stretch(self, sx, sx2, sy, sy2, bminX, bmaxX, bminY, bmaxY):
         self.vec_1 = Vec2(
-            self._stretch(sx, sx2, self.vec_1.x, bminX, bmaxX),
-            self._stretch(sy, sy2, self.vec_1.y, bminY, bmaxY),
+            self.__stretch(sx, sx2, self.vec_1.x, bminX, bmaxX),
+            self.__stretch(sy, sy2, self.vec_1.y, bminY, bmaxY),
         )
         self.vec_2 = Vec2(
-            self._stretch(sx, sx2, self.vec_2.x, bminX, bmaxX),
-            self._stretch(sy, sy2, self.vec_2.y, bminY, bmaxY),
+            self.__stretch(sx, sx2, self.vec_2.x, bminX, bmaxX),
+            self.__stretch(sy, sy2, self.vec_2.y, bminY, bmaxY),
         )
         if not (self.a1_100 == 99 and self.a1_opt == 0): # always true
             self.vec_3 = Vec2(
-                self._stretch(sx, sx2, self.vec_3.x, bminX, bmaxX),
-                self._stretch(sy, sy2, self.vec_3.y, bminY, bmaxY),
+                self.__stretch(sx, sx2, self.vec_3.x, bminX, bmaxX),
+                self.__stretch(sy, sy2, self.vec_3.y, bminY, bmaxY),
             )
             self.vec_4 = Vec2(
-                self._stretch(sx, sx2, self.vec_4.x, bminX, bmaxX),
-                self._stretch(sy, sy2, self.vec_4.y, bminY, bmaxY),
+                self.__stretch(sx, sx2, self.vec_4.x, bminX, bmaxX),
+                self.__stretch(sy, sy2, self.vec_4.y, bminY, bmaxY),
             )
 
     def get_box(self):
@@ -112,7 +112,7 @@ class Stroke:
             self.vec_4.y,
         ]
 
-    def _stretch(self, dp, sp, p, min_, max_):
+    def __stretch(self, dp, sp, p, min_, max_):
         if (p < sp + 100):
             p1 = min_
             p3 = min_

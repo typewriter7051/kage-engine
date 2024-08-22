@@ -1,9 +1,10 @@
-from ..serif import Serif
-from ...vec2 import Vec2, normalize
+#from ..serif import Serif
+from ..serif_font   import SerifFont
+from ...vec2        import Vec2, normalize
 import numpy as np
 import svgwrite
 
-class Round(Serif):
+class Round(SerifFont):
     def __init__(self, size=2) -> None:
         super().__init__(size)
         self.kWidth = 6

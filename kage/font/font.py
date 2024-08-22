@@ -19,5 +19,5 @@ class Font(ABC):
     
     @abstractmethod
     def drawer(self, canvas: svgwrite.Drawing, strokes_list: list[Stroke]):
-        pass
+        raise NotImplementedError()
 
