@@ -1,3 +1,4 @@
+.gitignore
 .vscode
 __pycache__
 **/__pycache__
@@ -5,3 +6,5 @@ output*/**
 !output/u5f71.svg
 !output/u5f71_serif.svg
 dump_*.txt
+main.py
+shell.nix

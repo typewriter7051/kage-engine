@@ -57,11 +57,28 @@ if __name__ == '__main__':
 
 u+5f71，“影”
 
+# Japanese Names
+
+|Kana|Chinese|
+|:-:|:-:|
+|Hane|鉤|
+|Mage|?|
+|Tate|竪|
+|Kakato|?|
+|Uroko|?|
+|Uroko2|?|
+|Kirikuchi|捺/撇|
+|Hori|?|
+
 # TODO
 
 - Serif: Algorithms for drawing offset curves with variable displacement have not been designed.
 
 - doc: Lack of Documentation.
+
+- Bezier Serif stroke drawer.
+
+- Clean up font/stroke inheritance model.
 
 # Scholarship Information
 
