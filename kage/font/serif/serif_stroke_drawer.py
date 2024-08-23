@@ -10,7 +10,8 @@ class LegacySerifStrokeDrawer:
         self.font = font
         self.canvas = canvas
         
-    def __draw_curve_universal(self, vec_1: Vec2, vec_s1: Vec2, vec_s2: Vec2, vec_2: Vec2, a1: int, a2: int, opt1, hane_adjustment, opt3, opt4) -> None:
+    def __draw_curve_universal(self, vec_1: Vec2, vec_s1: Vec2, vec_s2: Vec2, vec_2: Vec2,
+                               a1: int, a2: int, opt1, hane_adjustment, opt3, opt4) -> None:
         kMinWidthT = self.font.kMinWidthT - opt1 / 2
 
         if (temp := a1 % 100) in [0,7,27]:
@@ -28,7 +29,9 @@ class LegacySerifStrokeDrawer:
 
         corner_offset = 0
         if ((a1 == 22 or a1 == 27) and a2 == 7 and kMinWidthT > 6):
-            contourLength = np.hypot(*(vec_s1 - vec_1)) + np.hypot(*(vec_s2 - vec_1)) + np.hypot(*(vec_2 - vec_s2))
+            contourLength = np.hypot(*(vec_s1 - vec_1)) +
+                            np.hypot(*(vec_s2 - vec_1)) +
+                            np.hypot(*(vec_2 - vec_s2))
             if (contourLength < 100):
                 corner_offset = (kMinWidthT - 6) * ((100 - contourLength) / 100)
                 vec_1.x += corner_offset
@@ -44,11 +47,31 @@ class LegacySerifStrokeDrawer:
             vec_d = Vec2(0, -delta2) if all(vec_2 == vec_s2) else normalize(vec_2 - vec_s2, delta2)
             vec_2 += vec_d
 
-        self.__draw_curve_body(vec_1, vec_s1, vec_s2, vec_2, a1, a2, kMinWidthT, opt3, opt4)
-        self.__draw_curve_head(vec_1, vec_s1, a1, kMinWidthT, vec_1.y <= vec_2.y, corner_offset) # XXX: should check NaN or inf?
-        self.__draw_curve_tail(vec_s2, vec_2, a1, a2, kMinWidthT, hane_adjustment, opt4, vec_2.y <= vec_1.y)
+        self.__draw_curve_body(
+            vec_1, vec_s1, vec_s2, vec_2,
+            a1, a2,
+            kMinWidthT,
+            opt3,
+            opt4
+        )
+        self.__draw_curve_head(
+            vec_1, vec_s1,
+            a1,
+            kMinWidthT,
+            vec_1.y <= vec_2.y,
+            corner_offset
+        ) # XXX: should check NaN or inf?
+        self.__draw_curve_tail(
+            vec_s2, vec_2,
+            a1, a2,
+            kMinWidthT,
+            hane_adjustment,
+            opt4,
+            vec_2.y <= vec_1.y
+        )
 
-    def __draw_curve_body(self, vec_1: Vec2, vec_s1: Vec2, vec_s2: Vec2, vec_2: Vec2, a1, a2, kMinWidthT, opt3, opt4) -> None:
+    def __draw_curve_body(self, vec_1: Vec2, vec_s1: Vec2, vec_s2: Vec2, vec_2: Vec2,
+                          a1, a2, kMinWidthT, opt3, opt4) -> None:
         is_quadratic = all(vec_s1 == vec_s2)
         
         hosomi = 0.5
@@ -71,7 +94,11 @@ class LegacySerifStrokeDrawer:
             else:
                 return 1
             
-        left, right = generate_flatten_curve(vec_1, vec_s1, vec_s2, vec_2, self.font.kRate, lambda t: ((temp if (temp := delta_d(t)) > 0.15 else 0.15) * kMinWidthT))
+        left, right = generate_flatten_curve(
+            vec_1, vec_s1, vec_s2, vec_2,
+            self.font.kRate,
+            lambda t: ((temp if (temp := delta_d(t)) > 0.15 else 0.15) * kMinWidthT)
+        )
 
         # horizontal joint, 水平線に接続
         if a1 == 132 or a1 == 22 and (vec_1.y > vec_2.y) if is_quadratic else (vec_1.x > vec_s1.x):
@@ -104,15 +131,22 @@ class LegacySerifStrokeDrawer:
         dots = left + right
         dots = [str(dot) for dot in dots]
         # draw
-        path = svgwrite.path.Path(d = "M" + (" L".join(dots)), stroke = 'black', stroke_width = 0, fill = 'black')
+        path = svgwrite.path.Path(
+            d = "M" + (" L".join(dots)),
+            stroke = 'black',
+            stroke_width = 0,
+            fill = 'black'
+        )
         self.canvas.add(path)
 
-    def __draw_curve_head(self, vec_1: Vec2, vec_s1: Vec2, a1: int, kMinWidthT, is_up_to_bottom: bool, corner_offset) -> None:
+    def __draw_curve_head(self, vec_1: Vec2, vec_s1: Vec2,
+                          a1: int, kMinWidthT, is_up_to_bottom: bool, corner_offset) -> None:
         """
         process for head of stroke
         """
         if a1 == 12:
-            degree = np.arctan2(vec_1.x - vec_s1.x, vec_s1.y - vec_1.y) / (np.pi * 2) * 360
+            #degree = np.arctan2(vec_1.x - vec_s1.x, vec_s1.y - vec_1.y) / (np.pi * 2) * 360
+            degree = self.__vec_to_degree(vec_s1 - vec_1) - 90 % 360
             polygon = [
                 Vec2(-kMinWidthT, 0),
                 Vec2(+kMinWidthT, 0),
@@ -120,14 +154,21 @@ class LegacySerifStrokeDrawer:
             ]
             # draw
             polygon = [str(i) for i in polygon]
-            path = svgwrite.path.Path(d = "M" + (" L".join(polygon)), stroke = 'black', stroke_width = 0, fill = 'black', 
-                    transform = f'translate({vec_1}) rotate({degree},0,0)')
+            path = svgwrite.path.Path(
+                d = "M" + (" L".join(polygon)),
+                stroke = 'black',
+                stroke_width = 0,
+                fill = 'black',
+                transform = f'translate({vec_1}) rotate({degree},0,0)'
+            )
             self.canvas.add(path)
         elif a1 == 0:
             if is_up_to_bottom:
                 # from up to bottom
-                degree = np.arctan2(vec_1.x - vec_s1.x, vec_s1.y - vec_1.y) / (np.pi * 2) * 360
-                head_type = np.arctan2(np.abs(vec_1.y - vec_s1.y), np.abs(vec_1.x - vec_s1.x)) / np.pi * 2 - 0.4
+                #degree = np.arctan2(vec_1.x - vec_s1.x, vec_s1.y - vec_1.y) / (np.pi * 2) * 360
+                degree = self.__vec_to_degree(vec_s1 - vec_1) - 90 % 360
+                head_type = np.arctan2(np.abs(vec_1.y - vec_s1.y),
+                                       np.abs(vec_1.x - vec_s1.x)) / np.pi * 2 - 0.4
                 head_type *= 2 if head_type > 0 else 16
                 pm = -1 if head_type < 0 else 1
                 polygon = [
@@ -137,8 +178,13 @@ class LegacySerifStrokeDrawer:
                 ]
                 # draw
                 polygon = [str(i) for i in polygon]
-                path = svgwrite.path.Path(d = "M" + (" L".join(polygon)), stroke = 'black', stroke_width = 0, fill = 'black', 
-                        transform = f'translate({vec_1}) rotate({degree},0,0)')
+                path = svgwrite.path.Path(
+                    d = "M" + (" L".join(polygon)),
+                    stroke = 'black',
+                    stroke_width = 0,
+                    fill = 'black',
+                    transform = f'translate({vec_1}) rotate({degree},0,0)'
+                )
                 self.canvas.add(path)
                 
                 # beginning of the stroke
@@ -155,12 +201,18 @@ class LegacySerifStrokeDrawer:
                 ]
                 # draw
                 polygon2 = [str(i) for i in polygon2]
-                path = svgwrite.path.Path(d = "M" + (" L".join(polygon2)), stroke = 'black', stroke_width = 0, fill = 'black', 
-                        transform = f'translate({vec_1}) rotate({degree},0,0)')
+                path = svgwrite.path.Path(
+                    d = "M" + (" L".join(polygon2)),
+                    stroke = 'black',
+                    stroke_width = 0,
+                    fill = 'black',
+                    transform = f'translate({vec_1}) rotate({degree},0,0)'
+                )
                 self.canvas.add(path)
             else:
                 # bottom to up
-                degree = np.arctan2(vec_s1.y - vec_1.y, vec_s1.x - vec_1.x) / (np.pi * 2) * 360
+                #degree = np.arctan2(vec_s1.y - vec_1.y, vec_s1.x - vec_1.x) / (np.pi * 2) * 360
+                degree = self.__vec_to_degree(vec_s1 - vec_1)
                 polygon = [
                     Vec2(0, +kMinWidthT),
                     Vec2(0, -kMinWidthT),
@@ -168,8 +220,13 @@ class LegacySerifStrokeDrawer:
                 ]
                 # draw
                 polygon = [str(i) for i in polygon]
-                path = svgwrite.path.Path(d = "M" + (" L".join(polygon)), stroke = 'black', stroke_width = 0, fill = 'black', 
-                        transform = f'translate({vec_1}) rotate({degree},0,0)')
+                path = svgwrite.path.Path(
+                    d = "M" + (" L".join(polygon)),
+                    stroke = 'black',
+                    stroke_width = 0,
+                    fill = 'black',
+                    transform = f'translate({vec_1}) rotate({degree},0,0)'
+                )
                 self.canvas.add(path)
 
                 polygon2 = [
@@ -179,8 +236,13 @@ class LegacySerifStrokeDrawer:
                 ]
                 # draw
                 polygon2 = [str(i) for i in polygon2]
-                path = svgwrite.path.Path(d = "M" + (" L".join(polygon2)), stroke = 'black', stroke_width = 0, fill = 'black', 
-                        transform = f'translate({vec_1}) rotate({degree},0,0)')
+                path = svgwrite.path.Path(
+                    d = "M" + (" L".join(polygon2)),
+                    stroke = 'black',
+                    stroke_width = 0,
+                    fill = 'black',
+                    transform = f'translate({vec_1}) rotate({degree},0,0)'
+                )
                 self.canvas.add(path)
 
         elif a1 in [22, 27]: # box's right top corner
@@ -201,17 +263,24 @@ class LegacySerifStrokeDrawer:
             ]
             # draw
             polygon = [str(i) for i in polygon]
-            path = svgwrite.path.Path(d = "M" + (" L".join(polygon)), stroke = 'black', stroke_width = 0, fill = 'black', 
-                    transform = f'translate({vec_1 - Vec2(corner_offset, 0)})')
+            path = svgwrite.path.Path(
+                d = "M" + (" L".join(polygon)),
+                stroke = 'black',
+                stroke_width = 0,
+                fill = 'black',
+                transform = f'translate({vec_1 - Vec2(corner_offset, 0)})'
+            )
             self.canvas.add(path)
 
 
-    def __draw_curve_tail(self, vec_s2: Vec2, vec_2: Vec2, a1: int, a2: int, kMinWidthT, hane_adjustment, opt4, is_bottom_to_up):
+    def __draw_curve_tail(self, vec_s2: Vec2, vec_2: Vec2,
+                          a1: int, a2: int, kMinWidthT, hane_adjustment, opt4, is_bottom_to_up):
         """
         process for tail of stroke
         """
         if a2 in [1,8,15]:
-            degree = np.arctan2(vec_2.y - vec_s2.y, vec_2.x - vec_s2.x) / (np.pi * 2) * 360 
+            #degree = np.arctan2(vec_2.y - vec_s2.y, vec_2.x - vec_s2.x) / (np.pi * 2) * 360 
+            degree = self.__vec_to_degree(vec_2 - vec_s2)
             kMinWidthT2 = self.font.kMinWidthT - opt4 / 2
             path = [
                 "M",
@@ -224,8 +293,13 @@ class LegacySerifStrokeDrawer:
                 Vec2(0, +kMinWidthT2)
             ]
             path = [str(i) for i in path]
-            path = svgwrite.path.Path(d = " ".join(path), stroke = 'black', stroke_width = 0, fill = 'black', 
-                    transform = f'translate({vec_2}) rotate({degree},0,0)')
+            path = svgwrite.path.Path(
+                d = " ".join(path),
+                stroke = 'black',
+                stroke_width = 0,
+                fill = 'black',
+                transform = f'translate({vec_2}) rotate({degree},0,0)'
+            )
             self.canvas.add(path)
 
             if a2 == 15:
@@ -239,14 +313,20 @@ class LegacySerifStrokeDrawer:
 					Vec2(-kMinWidthT, -kMinWidthT + 1),
 				]
                 polygon = [str(i) for i in polygon]
-                path = svgwrite.path.Path(d = "M" + (" L".join(polygon)), stroke = 'black', stroke_width = 0, fill = 'black', 
-                        transform = f'translate({vec_2}) rotate({degree},0,0)')
+                path = svgwrite.path.Path(
+                    d = "M" + (" L".join(polygon)),
+                    stroke = 'black',
+                    stroke_width = 0,
+                    fill = 'black',
+                    transform = f'translate({vec_2}) rotate({degree},0,0)'
+                )
                 self.canvas.add(path)
 
         elif a2 in [0,9]:
             if a2 == 0 and not (a1 == 7 or a1 == 27):
                 return
-            degree = np.arctan2(vec_2.y - vec_s2.y, vec_2.x - vec_s2.x) / (np.pi * 2) * 360 
+            #degree = np.arctan2(vec_2.y - vec_s2.y, vec_2.x - vec_s2.x) / (np.pi * 2) * 360 
+            degree = self.__vec_to_degree(vec_2 - vec_s2)
             tail_type = np.arctan2(np.abs(vec_2.y - vec_s2.y), np.abs(vec_2.x - vec_s2.x)) / np.pi * 2 - 0.6
             tail_type *= 8 if tail_type > 0 else 3
             pm = -1 if tail_type < 0 else 1
@@ -256,12 +336,18 @@ class LegacySerifStrokeDrawer:
                 Vec2(np.abs(tail_type) * kMinWidthT * self.font.kL2RDfatten, pm * kMinWidthT * self.font.kL2RDfatten)
             ]
             polygon = [str(i) for i in polygon]
-            path = svgwrite.path.Path(d = "M" + (" L".join(polygon)), stroke = 'black', stroke_width = 0, fill = 'black', 
-                    transform = f'translate({vec_2}) rotate({degree},0,0)')
+            path = svgwrite.path.Path(
+                d = "M" + (" L".join(polygon)),
+                stroke = 'black',
+                stroke_width = 0,
+                fill = 'black',
+                transform = f'translate({vec_2}) rotate({degree},0,0)'
+            )
             self.canvas.add(path)
         elif a2 == 14:
             jump_factor = (6.0 / kMinWidthT) if kMinWidthT > 6 else 1.0
-            hane_length = self.font.kWidth * 4 * np.min([1 - hane_adjustment / 10, (kMinWidthT / self.font.kMinWidthT) ** 3]) * jump_factor
+            hane_length = self.font.kWidth * 4 * jump_factor *
+                          np.min([1 - hane_adjustment / 10, (kMinWidthT / self.font.kMinWidthT) ** 3])
             polygon = [
                 Vec2(0, 0),
                 Vec2(0, -kMinWidthT),
@@ -269,20 +355,44 @@ class LegacySerifStrokeDrawer:
                 Vec2(-hane_length, -kMinWidthT * 0.5),
             ]
             polygon = [str(i) for i in polygon]
-            path = svgwrite.path.Path(d = "M" + (" L".join(polygon)), stroke = 'black', stroke_width = 0, fill = 'black', 
-                    transform = f'translate({vec_2})')
+            path = svgwrite.path.Path(
+                d = "M" + (" L".join(polygon)),
+                stroke = 'black',
+                stroke_width = 0,
+                fill = 'black',
+                transform = f'translate({vec_2})'
+            )
             self.canvas.add(path)
 
-    def draw_bezier(self, vec_1: Vec2, vec_s1: Vec2, vec_s2: Vec2, vec_2: Vec2, a1: int, a2: int, opt1, hane_adjustment, opt3, opt4):
-        self.__draw_curve_universal(vec_1, vec_s1, vec_s2, vec_2, a1, a2, opt1, hane_adjustment, opt3, opt4)
+    def draw_bezier(self, vec_1: Vec2, vec_s1: Vec2, vec_s2: Vec2, vec_2: Vec2,
+                    a1: int, a2: int, opt1, hane_adjustment, opt3, opt4):
+        self.__draw_curve_universal(
+            vec_1, vec_s1, vec_s2, vec_2,
+            a1, a2,
+            opt1,
+            hane_adjustment,
+            opt3,
+            opt4
+        )
 
-    def draw_curve(self, vec_1: Vec2, vec_s: Vec2, vec_2: Vec2, a1: int, a2: int, opt1, hane_adjustment, opt3, opt4):
-        self.__draw_curve_universal(vec_1, vec_s, vec_s, vec_2, a1, a2, opt1, hane_adjustment, opt3, opt4)
+    def draw_curve(self, vec_1: Vec2, vec_s: Vec2, vec_2: Vec2,
+                   a1: int, a2: int, opt1, hane_adjustment, opt3, opt4):
+        self.__draw_curve_universal(
+            vec_1, vec_s, vec_s, vec_2,
+            a1, a2,
+            opt1,
+            hane_adjustment,
+            opt3,
+            opt4
+        )
     
-    def draw_line(self, vec_1: Vec2, vec_2: Vec2, a1: int, a2: int, opt1, uroko_adjustment: int, kakato_adjustment: int):
+    def draw_line(self, vec_1: Vec2, vec_2: Vec2,
+                  a1: int, a2: int, opt1, uroko_adjustment: int, kakato_adjustment: int):
         kMinWidthT = self.font.kMinWidthT - opt1 / 2
 
-        if (vec_1.x == vec_2.x or vec_1.y != vec_2.y and (vec_1.x > vec_2.x or np.abs(vec_2.y - vec_1.y) >= np.abs(vec_2.x - vec_1.x) or a1 == 6 or a2 == 6)):
+        if (vec_1.x == vec_2.x or vec_1.y != vec_2.y and
+            (vec_1.x > vec_2.x or np.abs(vec_2.y - vec_1.y) >= np.abs(vec_2.x - vec_1.x) or
+             a1 == 6 or a2 == 6)):
             # 縦, 竖, vertical storke: use y-axis
             # 角度が深い / 鈎（かぎ）の横
 
@@ -359,7 +469,12 @@ class LegacySerifStrokeDrawer:
 
             # draw body
             poly0 = [str(i) for i in poly0]
-            path = svgwrite.path.Path(d = "M" + (" L".join(poly0)), stroke = 'black', stroke_width = 0, fill = 'black')
+            path = svgwrite.path.Path(
+                d = "M" + (" L".join(poly0)),
+                stroke = 'black',
+                stroke_width = 0,
+                fill = 'black'
+            )
             self.canvas.add(path)
 
             if a2 == 24: # for T design
@@ -370,8 +485,13 @@ class LegacySerifStrokeDrawer:
                     Vec2(+kMinWidthT * 2, +self.font.kMinWidthY)
                 ]
                 polygon = [str(i) for i in polygon]
-                path = svgwrite.path.Path(d = "M" + (" L".join(polygon)), stroke = 'black', stroke_width = 0, fill = 'black', 
-                        transform = f'translate({vec_2})')
+                path = svgwrite.path.Path(
+                    d = "M" + (" L".join(polygon)),
+                    stroke = 'black',
+                    stroke_width = 0,
+                    fill = 'black',
+                    transform = f'translate({vec_2})'
+                )
                 self.canvas.add(path)
             elif a2 == 13:
                 if kakato_adjustment == 4: # for new GTH box's left bottom corner
@@ -383,8 +503,13 @@ class LegacySerifStrokeDrawer:
                             Vec2(+kMinWidthT, +self.font.kMinWidthY)
                         ]
                         polygon = [str(i) for i in polygon]
-                        path = svgwrite.path.Path(d = "M" + (" L".join(polygon)), stroke = 'black', stroke_width = 0, fill = 'black', 
-                                transform = f'translate({vec_2})')
+                        path = svgwrite.path.Path(
+                            d = "M" + (" L".join(polygon)),
+                            stroke = 'black',
+                            stroke_width = 0,
+                            fill = 'black',
+                            transform = f'translate({vec_2})'
+                        )
                         self.canvas.add(path)
                     else: # direction unrelated，向き関係なし
                         polygon = [
@@ -395,8 +520,13 @@ class LegacySerifStrokeDrawer:
                             Vec2(0,0)
                         ]
                         polygon = [str(i) for i in polygon]
-                        path = svgwrite.path.Path(d = "M" + (" L".join(polygon)), stroke = 'black', stroke_width = 0, fill = 'black', 
-                                transform = f'translate({vec_2 + Vec2((vec_1.x - vec_2.x) / (vec_2.y - vec_1.y) * 3 if (vec_1.x > vec_2.x and vec_1.y != vec_2.y) else 0, 0)})')
+                        path = svgwrite.path.Path(
+                            d = "M" + (" L".join(polygon)),
+                            stroke = 'black',
+                            stroke_width = 0,
+                            fill = 'black',
+                            transform = f'translate({vec_2 + Vec2((vec_1.x - vec_2.x) / (vec_2.y - vec_1.y) * 3 if (vec_1.x > vec_2.x and vec_1.y != vec_2.y) else 0, 0)})'
+                        )
                         self.canvas.add(path)
 
             if a1 in [22,27]: # box's right top corner
@@ -419,8 +549,13 @@ class LegacySerifStrokeDrawer:
                     Vec2(-kMinWidthT, +kMinWidthT + 4)
                 ]
                 poly = [str(i) for i in poly]
-                path = svgwrite.path.Path(d = "M" + (" L".join(poly)), stroke = 'black', stroke_width = 0, fill = 'black', 
-                        transform = f'translate({vec_1})')
+                path = svgwrite.path.Path(
+                    d = "M" + (" L".join(poly)),
+                    stroke = 'black',
+                    stroke_width = 0,
+                    fill = 'black',
+                    transform = f'translate({vec_1})'
+                )
                 self.canvas.add(path)
             elif a1 == 0: # beginning of the stroke
                 poly = [
@@ -433,7 +568,12 @@ class LegacySerifStrokeDrawer:
 						vec_1.y + (kMinWidthT + 1) * -cosrad + (self.font.kMinWidthY * 0.5 + self.font.kMinWidthY * 2) * sinrad)
                 
                 poly = [str(i) for i in poly]
-                path = svgwrite.path.Path(d = "M" + (" L".join(poly)), stroke = 'black', stroke_width = 0, fill = 'black')
+                path = svgwrite.path.Path(
+                    d = "M" + (" L".join(poly)),
+                    stroke = 'black',
+                    stroke_width = 0,
+                    fill = 'black'
+                )
                 self.canvas.add(path)
 
             if (vec_1.x == vec_2.x and a2 == 1 or a1 == 6 and (a2 == 0 or vec_1.x != vec_2.x and a2 == 5)):
@@ -451,7 +591,12 @@ class LegacySerifStrokeDrawer:
                     vec_2 + rotation_matrix @ Vec2(-kMinWidthT, 0)
                 ]
                 poly = [str(i) for i in poly]
-                path = svgwrite.path.Path(d = " ".join(poly), stroke = 'black', stroke_width = 0, fill = 'black')
+                path = svgwrite.path.Path(
+                    d = " ".join(poly),
+                    stroke = 'black',
+                    stroke_width = 0,
+                    fill = 'black'
+                )
                 self.canvas.add(path)
 
                 if (vec_1.x != vec_2.x and a1 == 6 and a2 == 5):
@@ -465,7 +610,12 @@ class LegacySerifStrokeDrawer:
                         Vec2(kMinWidthT - 1, -kMinWidthT), 
                     ]
                     poly = [str(vec_2 + rotation_matrix @ i) for i in poly]
-                    path = svgwrite.path.Path(d = "M" + " L".join(poly), stroke = 'black', stroke_width = 0, fill = 'black')
+                    path = svgwrite.path.Path(
+                        d = "M" + " L".join(poly),
+                        stroke = 'black',
+                        stroke_width = 0,
+                        fill = 'black'
+                    )
                     self.canvas.add(path)
 
         elif (vec_1.y == vec_2.y and a1 == 6):
@@ -480,7 +630,12 @@ class LegacySerifStrokeDrawer:
                 vec_1 + Vec2(0, +kMinWidthT),
             ]
             poly0 = [str(i) for i in poly0]
-            path = svgwrite.path.Path(d = "M" + (" L".join(poly0)), stroke = 'black', stroke_width = 0, fill = 'black')
+            path = svgwrite.path.Path(
+                d = "M" + (" L".join(poly0)),
+                stroke = 'black',
+                stroke_width = 0,
+                fill = 'black'
+            )
             self.canvas.add(path)
 
             if a2 in [1,0,5]:
@@ -498,7 +653,13 @@ class LegacySerifStrokeDrawer:
                     Vec2(0, +kMinWidthT),
                 ]
                 poly = [str(i) for i in poly]
-                path = svgwrite.path.Path(d = " ".join(poly), stroke = 'black', stroke_width = 0, fill = 'black', transform = f'translate({vec_2}) rotate({degree},0,0)')
+                path = svgwrite.path.Path(
+                    d = " ".join(poly),
+                    stroke = 'black',
+                    stroke_width = 0,
+                    fill = 'black',
+                    transform = f'translate({vec_2}) rotate({degree},0,0)'
+                )
                 self.canvas.add(path)
                 
                 if a2 == 5:
@@ -512,7 +673,13 @@ class LegacySerifStrokeDrawer:
 						Vec2(-kMinWidthT, rv * -kMinWidthT)
                     ]
                     poly = [str(i) for i in poly]
-                    path = svgwrite.path.Path(d = "M" + " L".join(poly), stroke = 'black', stroke_width = 0, fill = 'black', transform = f'translate({vec_2}) rotate({degree},0,0)')
+                    path = svgwrite.path.Path(
+                        d = "M" + " L".join(poly),
+                        stroke = 'black',
+                        stroke_width = 0,
+                        fill = 'black',
+                        transform = f'translate({vec_2}) rotate({degree},0,0)'
+                    )
                     self.canvas.add(path)
 
         else:
@@ -535,7 +702,12 @@ class LegacySerifStrokeDrawer:
 
             # draw body
             poly = [str(i) for i in poly]
-            path = svgwrite.path.Path(d = "M" + (" L".join(poly)), stroke = 'black', stroke_width = 0, fill = 'black')
+            path = svgwrite.path.Path(
+                d = "M" + (" L".join(poly)),
+                stroke = 'black',
+                stroke_width = 0,
+                fill = 'black'
+            )
             self.canvas.add(path)
 
             # tail
@@ -547,8 +719,16 @@ class LegacySerifStrokeDrawer:
                     vec_2 - (rotation_matrix[:,0] + rotation_matrix[:,1]) * uroko_scale * Vec2(0.5, 1) * Vec2(self.font.kAdjustUrokoX[uroko_adjustment], self.font.kAdjustUrokoY[uroko_adjustment])
                 ]
                 poly2 = [str(i) for i in poly2]
-                path = svgwrite.path.Path(d = "M" + (" L".join(poly2)), stroke = 'black', stroke_width = 0, fill = 'black')
+                path = svgwrite.path.Path(
+                    d = "M" + (" L".join(poly2)),
+                    stroke = 'black',
+                    stroke_width = 0,
+                    fill = 'black'
+                )
                 self.canvas.add(path)
+    
+    def __vec_to_degree(vec: Vec2) -> float:
+        return np.arctan2(vec.y, vec.x) * 180 / np.pi
 
 class BezierSerifStrokeDrawer(LegacySerifStrokeDrawer): # XXX Finish this.
     pass
