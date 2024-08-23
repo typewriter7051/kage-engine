@@ -11,24 +11,24 @@ class LegacySerifStrokeDrawer:
         self.canvas = canvas
         
     def __draw_curve_universal(self, vec_1: Vec2, vec_s1: Vec2, vec_s2: Vec2, vec_2: Vec2,
-                               a1: int, a2: int, opt1, hane_adjustment, opt3, opt4) -> None:
+                               a2: int, a3: int, opt1, hane_adjustment, opt3, opt4) -> None:
         kMinWidthT = self.font.kMinWidthT - opt1 / 2
 
-        if (temp := a1 % 100) in [0,7,27]:
-            delta1 = -1 * self.font.kMinWidthY * 0.5
+        if (temp := a2 % 100) in [0,7,27]:
+            delta2 = -1 * self.font.kMinWidthY * 0.5
         elif temp in [1, 2, 6, 22, 32]:
-            delta1 = 0
+            delta2 = 0
         elif temp == 12:
-            delta1 = self.font.kMinWidthY
+            delta2 = self.font.kMinWidthY
         else:
             return
 
-        if delta1 != 0:
-            vec_d = Vec2(0, delta1) if all(vec_1 == vec_s1) else normalize(vec_1 - vec_s1, delta1)
+        if delta2 != 0:
+            vec_d = Vec2(0, delta2) if all(vec_1 == vec_s1) else normalize(vec_1 - vec_s1, delta2)
             vec_1 += vec_d
 
         corner_offset = 0
-        if ((a1 == 22 or a1 == 27) and a2 == 7 and kMinWidthT > 6):
+        if ((a2 == 22 or a2 == 27) and a3 == 7 and kMinWidthT > 6):
             contourLength = np.hypot(*(vec_s1 - vec_1)) +
                             np.hypot(*(vec_s2 - vec_1)) +
                             np.hypot(*(vec_2 - vec_s2))
@@ -36,34 +36,34 @@ class LegacySerifStrokeDrawer:
                 corner_offset = (kMinWidthT - 6) * ((100 - contourLength) / 100)
                 vec_1.x += corner_offset
 
-        if (temp := a2 % 100) in [0,1,7,9,15,14,17,5]:
-            delta2 = 0
+        if (temp := a3 % 100) in [0,1,7,9,15,14,17,5]:
+            delta3 = 0
         elif temp == 8:
-            delta2 = -1 * kMinWidthT * 0.5
+            delta3 = -1 * kMinWidthT * 0.5
         else:
-            delta2 = delta1
+            delta3 = delta2
 
-        if delta2 != 0:
-            vec_d = Vec2(0, -delta2) if all(vec_2 == vec_s2) else normalize(vec_2 - vec_s2, delta2)
+        if delta3 != 0:
+            vec_d = Vec2(0, -delta3) if all(vec_2 == vec_s2) else normalize(vec_2 - vec_s2, delta3)
             vec_2 += vec_d
 
         self.__draw_curve_body(
             vec_1, vec_s1, vec_s2, vec_2,
-            a1, a2,
+            a2, a3,
             kMinWidthT,
             opt3,
             opt4
         )
         self.__draw_curve_head(
             vec_1, vec_s1,
-            a1,
+            a2,
             kMinWidthT,
             vec_1.y <= vec_2.y,
             corner_offset
         ) # XXX: should check NaN or inf?
         self.__draw_curve_tail(
             vec_s2, vec_2,
-            a1, a2,
+            a2, a3,
             kMinWidthT,
             hane_adjustment,
             opt4,
@@ -71,7 +71,7 @@ class LegacySerifStrokeDrawer:
         )
 
     def __draw_curve_body(self, vec_1: Vec2, vec_s1: Vec2, vec_s2: Vec2, vec_2: Vec2,
-                          a1, a2, kMinWidthT, opt3, opt4) -> None:
+                          a2, a3, kMinWidthT, opt3, opt4) -> None:
         is_quadratic = all(vec_s1 == vec_s2)
         
         hosomi = 0.5
@@ -80,14 +80,14 @@ class LegacySerifStrokeDrawer:
             hosomi += 0.4 * (1 - np.hypot(*(vec_2 - vec_1)) / 50)
 
         def delta_d(t: float) -> float:
-            if (a1 == 7 or a1 == 27) and a2 == 0:  # L2RD: fatten
+            if (a2 == 7 or a2 == 27) and a3 == 0:  # L2RD: fatten
                 return t ** hosomi * self.font.kL2RDfatten
-            if a1 == 7 or a1 == 27:
+            if a2 == 7 or a2 == 27:
                 if is_quadratic:
                     return t ** hosomi
                 else:
                     return (t ** hosomi) ** 0.7  # make fatten
-            if a2 == 7:
+            if a3 == 7:
                 return (1 - t) ** hosomi
             if is_quadratic and (opt3 > 0 or opt4 > 0):
                 return ((self.font.kMinWidthT - opt3 / 2) - (opt4 - opt3) / 2 * t) / self.font.kMinWidthT
@@ -101,7 +101,7 @@ class LegacySerifStrokeDrawer:
         )
 
         # horizontal joint, 水平線に接続
-        if a1 == 132 or a1 == 22 and (vec_1.y > vec_2.y) if is_quadratic else (vec_1.x > vec_s1.x):
+        if a2 == 132 or a2 == 22 and (vec_1.y > vec_2.y) if is_quadratic else (vec_1.x > vec_s1.x):
             for index in range(len(right) - 1):
                 point1 = right[index]
                 point2 = right[index + 1]
@@ -114,10 +114,10 @@ class LegacySerifStrokeDrawer:
                     point4 = left[1]
                     new2 = Vec2(
                         point3.x + (point4.x - point3.x) * (vec_1.y - point3.y) / (point4.y - point3.y) \
-                        if a1 == 132 else \
+                        if a2 == 132 else \
                         point3.x + (point4.x - point3.x + 1) * (vec_1.y - point3.y) / (point4.y - point3.y),
                         vec_1.y \
-                        if a1 == 132 else \
+                        if a2 == 132 else \
                         vec_1.y + 1
                     )
                     for i in range(index):
@@ -140,11 +140,11 @@ class LegacySerifStrokeDrawer:
         self.canvas.add(path)
 
     def __draw_curve_head(self, vec_1: Vec2, vec_s1: Vec2,
-                          a1: int, kMinWidthT, is_up_to_bottom: bool, corner_offset) -> None:
+                          a2: int, kMinWidthT, is_up_to_bottom: bool, corner_offset) -> None:
         """
         process for head of stroke
         """
-        if a1 == 12:
+        if a2 == 12:
             #degree = np.arctan2(vec_1.x - vec_s1.x, vec_s1.y - vec_1.y) / (np.pi * 2) * 360
             degree = self.__vec_to_degree(vec_s1 - vec_1) - 90 % 360
             polygon = [
@@ -162,7 +162,7 @@ class LegacySerifStrokeDrawer:
                 transform = f'translate({vec_1}) rotate({degree},0,0)'
             )
             self.canvas.add(path)
-        elif a1 == 0:
+        elif a2 == 0:
             if is_up_to_bottom:
                 # from up to bottom
                 #degree = np.arctan2(vec_1.x - vec_s1.x, vec_s1.y - vec_1.y) / (np.pi * 2) * 360
@@ -245,7 +245,7 @@ class LegacySerifStrokeDrawer:
                 )
                 self.canvas.add(path)
 
-        elif a1 in [22, 27]: # box's right top corner
+        elif a2 in [22, 27]: # box's right top corner
             # 四角右上鱗斜めでもまっすぐ向き
             # 箱形右上三角形装饰
             polygon = [
@@ -258,7 +258,7 @@ class LegacySerifStrokeDrawer:
             polygon += [
                 Vec2(0, +kMinWidthT + 2),
                 Vec2(0, 0)
-            ] if a1 == 27 else [
+            ] if a2 == 27 else [
                 Vec2(-kMinWidthT, +kMinWidthT + 4)
             ]
             # draw
@@ -274,11 +274,11 @@ class LegacySerifStrokeDrawer:
 
 
     def __draw_curve_tail(self, vec_s2: Vec2, vec_2: Vec2,
-                          a1: int, a2: int, kMinWidthT, hane_adjustment, opt4, is_bottom_to_up):
+                          a2: int, a3: int, kMinWidthT, hane_adjustment, opt4, is_bottom_to_up):
         """
         process for tail of stroke
         """
-        if a2 in [1,8,15]:
+        if a3 in [1,8,15]:
             #degree = np.arctan2(vec_2.y - vec_s2.y, vec_2.x - vec_s2.x) / (np.pi * 2) * 360 
             degree = self.__vec_to_degree(vec_2 - vec_s2)
             kMinWidthT2 = self.font.kMinWidthT - opt4 / 2
@@ -302,7 +302,7 @@ class LegacySerifStrokeDrawer:
             )
             self.canvas.add(path)
 
-            if a2 == 15:
+            if a3 == 15:
                 degree = 0
                 if is_bottom_to_up:
                     degree = 180
@@ -322,8 +322,8 @@ class LegacySerifStrokeDrawer:
                 )
                 self.canvas.add(path)
 
-        elif a2 in [0,9]:
-            if a2 == 0 and not (a1 == 7 or a1 == 27):
+        elif a3 in [0,9]:
+            if a3 == 0 and not (a2 == 7 or a2 == 27):
                 return
             #degree = np.arctan2(vec_2.y - vec_s2.y, vec_2.x - vec_s2.x) / (np.pi * 2) * 360 
             degree = self.__vec_to_degree(vec_2 - vec_s2)
@@ -344,7 +344,7 @@ class LegacySerifStrokeDrawer:
                 transform = f'translate({vec_2}) rotate({degree},0,0)'
             )
             self.canvas.add(path)
-        elif a2 == 14:
+        elif a3 == 14:
             jump_factor = (6.0 / kMinWidthT) if kMinWidthT > 6 else 1.0
             hane_length = self.font.kWidth * 4 * jump_factor *
                           np.min([1 - hane_adjustment / 10, (kMinWidthT / self.font.kMinWidthT) ** 3])
@@ -365,10 +365,10 @@ class LegacySerifStrokeDrawer:
             self.canvas.add(path)
 
     def draw_bezier(self, vec_1: Vec2, vec_s1: Vec2, vec_s2: Vec2, vec_2: Vec2,
-                    a1: int, a2: int, opt1, hane_adjustment, opt3, opt4):
+                    a2: int, a3: int, opt1, hane_adjustment, opt3, opt4):
         self.__draw_curve_universal(
             vec_1, vec_s1, vec_s2, vec_2,
-            a1, a2,
+            a2, a3,
             opt1,
             hane_adjustment,
             opt3,
@@ -376,10 +376,10 @@ class LegacySerifStrokeDrawer:
         )
 
     def draw_curve(self, vec_1: Vec2, vec_s: Vec2, vec_2: Vec2,
-                   a1: int, a2: int, opt1, hane_adjustment, opt3, opt4):
+                   a2: int, a3: int, opt1, hane_adjustment, opt3, opt4):
         self.__draw_curve_universal(
             vec_1, vec_s, vec_s, vec_2,
-            a1, a2,
+            a2, a3,
             opt1,
             hane_adjustment,
             opt3,
@@ -387,12 +387,12 @@ class LegacySerifStrokeDrawer:
         )
     
     def draw_line(self, vec_1: Vec2, vec_2: Vec2,
-                  a1: int, a2: int, opt1, uroko_adjustment: int, kakato_adjustment: int):
+                  a2: int, a3: int, opt1, uroko_adjustment: int, kakato_adjustment: int):
         kMinWidthT = self.font.kMinWidthT - opt1 / 2
 
         if (vec_1.x == vec_2.x or vec_1.y != vec_2.y and
             (vec_1.x > vec_2.x or np.abs(vec_2.y - vec_1.y) >= np.abs(vec_2.x - vec_1.x) or
-             a1 == 6 or a2 == 6)):
+             a2 == 6 or a3 == 6)):
             # 縦, 竖, vertical storke: use y-axis
             # 角度が深い / 鈎（かぎ）の横
 
@@ -406,16 +406,16 @@ class LegacySerifStrokeDrawer:
             poly0 = [Vec2(0, 0)] * 4
 
             # head
-            if a1 == 0:
+            if a2 == 0:
                 poly0[0] = rotation_matrix @ Vec2(kMinWidthT, self.font.kMinWidthY / 2)
                 poly0[3] = rotation_matrix @ Vec2(-kMinWidthT, -self.font.kMinWidthY / 2)
-            elif a1 in [1,6]:
+            elif a2 in [1,6]:
                 poly0[0] = rotation_matrix @ Vec2(kMinWidthT, 0)
                 poly0[3] = rotation_matrix @ Vec2(-kMinWidthT, 0)
-            elif a1 == 12: # 箱型左上角
+            elif a2 == 12: # 箱型左上角
                 poly0[0] = rotation_matrix @ Vec2(kMinWidthT, -self.font.kMinWidthY)
                 poly0[3] = rotation_matrix @ Vec2(-kMinWidthT, -self.font.kMinWidthY - kMinWidthT)
-            elif a1 == 22: # 箱型右上角
+            elif a2 == 22: # 箱型右上角
                 v = -1 if vec_1.x > vec_2.x else 1
                 if vec_1.x == vec_2.x:
                     poly0[0] = Vec2(+ kMinWidthT, 0)
@@ -423,7 +423,7 @@ class LegacySerifStrokeDrawer:
                 else:
                     poly0[0] = Vec2(+ (kMinWidthT + v) / sinrad, +1)
                     poly0[3] = Vec2(- kMinWidthT / sinrad, 0)
-            elif a1 == 32: # ?
+            elif a2 == 32: # ?
                 if vec_1.x == vec_2.x:
                     poly0[0] = Vec2(+ kMinWidthT, - self.font.kMinWidthY)
                     poly0[3] = Vec2(- kMinWidthT, - self.font.kMinWidthY)
@@ -436,26 +436,26 @@ class LegacySerifStrokeDrawer:
             poly0[3] += vec_1
 
             # tail
-            if a2 == 0:
-                if a1 == 6:
+            if a3 == 0:
+                if a2 == 6:
                     poly0[1] = rotation_matrix @ Vec2(kMinWidthT, 0)
                     poly0[2] = rotation_matrix @ Vec2(-kMinWidthT, 0)
                 else:
                     poly0[1] = rotation_matrix @ Vec2(kMinWidthT, -kMinWidthT / 2)
                     poly0[2] = rotation_matrix @ Vec2(-kMinWidthT, kMinWidthT / 2)
-            elif a2 in [1,5]:
-                if a2 == 5 and vec_1.x == vec_2.x:
+            elif a3 in [1,5]:
+                if a3 == 5 and vec_1.x == vec_2.x:
                     pass
                 else:
                     poly0[1] = rotation_matrix @ Vec2(kMinWidthT, 0)
                     poly0[2] = rotation_matrix @ Vec2(-kMinWidthT, 0)
-            elif a2 == 13:
+            elif a3 == 13:
                 poly0[1] = rotation_matrix @ Vec2(kMinWidthT, self.font.kAdjustKakatoL[kakato_adjustment])
                 poly0[2] = rotation_matrix @ Vec2(-kMinWidthT, self.font.kAdjustKakatoL[kakato_adjustment] + kMinWidthT)
-            elif a2 == 23:
+            elif a3 == 23:
                 poly0[1] = rotation_matrix @ Vec2(kMinWidthT, self.font.kAdjustKakatoR[kakato_adjustment])
                 poly0[2] = rotation_matrix @ Vec2(-kMinWidthT, self.font.kAdjustKakatoR[kakato_adjustment] + kMinWidthT)
-            elif a2 in [24,32]:
+            elif a3 in [24,32]:
                 if vec_1.x == vec_2.x:
                     poly0[1] = Vec2(+ kMinWidthT, self.font.kMinWidthY)
                     poly0[2] = Vec2(- kMinWidthT, self.font.kMinWidthY)
@@ -477,7 +477,7 @@ class LegacySerifStrokeDrawer:
             )
             self.canvas.add(path)
 
-            if a2 == 24: # for T design
+            if a3 == 24: # for T design
                 polygon = [
                     Vec2(0, self.font.kMinWidthY),
                     Vec2(+kMinWidthT, -self.font.kMinWidthY * 3) if vec_1.x == vec_2.x else Vec2(+kMinWidthT * 0.5, -self.font.kMinWidthY * 4),
@@ -493,7 +493,7 @@ class LegacySerifStrokeDrawer:
                     transform = f'translate({vec_2})'
                 )
                 self.canvas.add(path)
-            elif a2 == 13:
+            elif a3 == 13:
                 if kakato_adjustment == 4: # for new GTH box's left bottom corner
                     if vec_1.x == vec_2.x:
                         polygon = [
@@ -529,7 +529,7 @@ class LegacySerifStrokeDrawer:
                         )
                         self.canvas.add(path)
 
-            if a1 in [22,27]: # box's right top corner
+            if a2 in [22,27]: # box's right top corner
                 # 四角右上鱗斜めでもまっすぐ向き
                 # 箱形右上三角形装饰
                 poly = [
@@ -544,7 +544,7 @@ class LegacySerifStrokeDrawer:
                     Vec2(+kMinWidthT, +kMinWidthT - 1),
                     Vec2(0, +kMinWidthT + 2),
                     Vec2(0, 0),
-                ] if a1 == 27 else [
+                ] if a2 == 27 else [
                     Vec2(+kMinWidthT, +kMinWidthT - 1),
                     Vec2(-kMinWidthT, +kMinWidthT + 4)
                 ]
@@ -557,7 +557,7 @@ class LegacySerifStrokeDrawer:
                     transform = f'translate({vec_1})'
                 )
                 self.canvas.add(path)
-            elif a1 == 0: # beginning of the stroke
+            elif a2 == 0: # beginning of the stroke
                 poly = [
 					vec_1 + rotation_matrix @ Vec2(kMinWidthT, self.font.kMinWidthY * 0.5),
 					vec_1 + rotation_matrix @ Vec2(kMinWidthT + kMinWidthT * 0.5, self.font.kMinWidthY * 0.5 + self.font.kMinWidthY),
@@ -576,7 +576,7 @@ class LegacySerifStrokeDrawer:
                 )
                 self.canvas.add(path)
 
-            if (vec_1.x == vec_2.x and a2 == 1 or a1 == 6 and (a2 == 0 or vec_1.x != vec_2.x and a2 == 5)):
+            if (vec_1.x == vec_2.x and a3 == 1 or a2 == 6 and (a3 == 0 or vec_1.x != vec_2.x and a3 == 5)):
                 # 鈎の横棒の最後の丸
                 # no need only used at 1st=yoko
                 poly = [
@@ -599,7 +599,7 @@ class LegacySerifStrokeDrawer:
                 )
                 self.canvas.add(path)
 
-                if (vec_1.x != vec_2.x and a1 == 6 and a2 == 5):
+                if (vec_1.x != vec_2.x and a2 == 6 and a3 == 5):
                     # 鈎の横棒のハネ
                     hane_length = self.font.kWidth * 5
                     rv = 1 if vec_1.x < vec_2.x else -1
@@ -618,7 +618,7 @@ class LegacySerifStrokeDrawer:
                     )
                     self.canvas.add(path)
 
-        elif (vec_1.y == vec_2.y and a1 == 6):
+        elif (vec_1.y == vec_2.y and a2 == 6):
             # 横（よこ）, 横划, horizontal stroke: use x-axis
             # 鈎の横, 钩的横划, horizontal stroke of hook: get bold
             
@@ -638,7 +638,7 @@ class LegacySerifStrokeDrawer:
             )
             self.canvas.add(path)
 
-            if a2 in [1,0,5]:
+            if a3 in [1,0,5]:
                 # 鍵の横棒に最後の丸
                 degree = 180 if vec_1.x > vec_2.x else 0
                 
@@ -662,7 +662,7 @@ class LegacySerifStrokeDrawer:
                 )
                 self.canvas.add(path)
                 
-                if a2 == 5:
+                if a3 == 5:
                     # 鈎の横棒のハネ
                     hane_length = self.font.kWidth * (4 * (1 - opt1 / self.font.kAdjustMageStep) + 1)
                     rv = 1 if vec_1.x < vec_2.x else -1
@@ -711,7 +711,7 @@ class LegacySerifStrokeDrawer:
             self.canvas.add(path)
 
             # tail
-            if a2 == 0: # 鱗
+            if a3 == 0: # 鱗
                 uroko_scale = (self.font.kMinWidthU / self.font.kMinWidthY - 1.0) / 4.0 + 1
                 poly2 = [
                     vec_2 + rotation_matrix @ Vec2(0, -self.font.kMinWidthY),

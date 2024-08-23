@@ -4,8 +4,8 @@ from argparse   import Namespace
 import numpy as np
 
 """
-a1_100 defines the stroke type.
-a2_100 a3_100 define the start and end serifs.
+a1 defines the stroke type.
+a2 a3 define the start and end serifs.
 vec_1 vec_2 are the start and endpoints of the stroke.
 vec_3 vec_4 are optionally used as Bezier points if the stroke is curved.
 """
